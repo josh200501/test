@@ -57,6 +57,7 @@ def get_beha_seqs_from_local(log_file):
 
 def get_beha_seqs_from_db(hashvalue):
     global beha_seq
+    white_pid_list = []
     filt_dup = False
     exp_list = ['REG_getval', 'REG_openkey', 'FILE_open']
 
@@ -65,9 +66,32 @@ def get_beha_seqs_from_db(hashvalue):
     if lines == "":
         return False
 
-    for line in lines:
+    execute_para = sys_info.get_sample_execute_para(hashvalue)
+    try:
+        proc = execute_para['execute_para']['proc']
+        para = execute_para['execute_para']['para']
+    except:
+        print 'execute_para:', execute_para
+
+    '将日志分割为已知程序和未知程序'
+    j = 0
+    for i in lines:
+        if proc in i['pathname'] and i['action'] == 'EXEC_create':
+            break
+        j += 1
+    known_list = lines[:j]
+    unknown_list = lines[j:]
+
+    for i in known_list:
+        white_pid_list.append(i['pid'])
+
+    for line in unknown_list:
         action = line['action']
+        pid = line['pid']
         if action in exp_list:
+            continue
+
+        if  pid in white_pid_list:
             continue
 
         if not filt_dup:
@@ -161,8 +185,8 @@ if __name__ == '__main__':
     #logfile = '../Backdoor.IRCbot/8728eb0f5c6a5403e9de1ee280b009cd63ce92a7.log'
 
     #logfile = '../Backdoor.Generic/91b15046e499d7b8c25d2c5a1fe48464147487a4.log'
-    logfile = '../Backdoor.Generic/a4ffeeb95604fe0fb00c8393aacea59829dccc63.log'
-
+    #logfile = '../Backdoor.Generic/a4ffeeb95604fe0fb00c8393aacea59829dccc63.log'
+    """
     res = get_beha_seqs_from_local(logfile)
     if not res:
         print 'log is empty'
@@ -170,6 +194,7 @@ if __name__ == '__main__':
     for i in beha_seq:
         j += 1
         print i
+    """
     #main('hashs_train.log','train.log')
-    #main('hashs_test.log','test.log')
+    main('hashs_test.log','test.log')
 
