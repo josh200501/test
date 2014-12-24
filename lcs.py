@@ -1,5 +1,8 @@
 #!/usr/local/bin/python
 #coding:utf8
+import sys
+
+sys.setrecursionlimit(10000)
 
 from numpy import *
 from matplotlib import pyplot as plt
@@ -11,6 +14,9 @@ linesep = os.linesep
 x = []
 y = []
 
+bk_x = []
+bk_y = []
+
 str1 = 'seq4.log'
 str2 = 'seq5.log'
 
@@ -18,8 +24,8 @@ str2 = 'seq5.log'
 #str2 = 'backdoor.generic/seq2.log'
 #str1 = 'test_logs/seq1.log'
 #str2 = 'test_logs/seq6.log'
-#str1 = 'backdoor.ircbot/seq1.log'
-#str2 = 'backdoor.ircbot/seq6.log'
+str1 = 'backdoor.ircbot/seq1.log'
+str2 = 'backdoor.ircbot/seq5.log'
 
 print '%s vs %s' %(str1, str2)
 
@@ -123,11 +129,14 @@ def lcs_continue(str1, str2):
     print sub_seq
 
 def sub_seq(i, j):
+    global bk_x, bk_y
     if i == 0 or j == 0:
         return
 
     if flag[i,j] == LEFT_UP:
         print '%s, [%d,%d]' %(y[j-1], i-1, j-1)
+        bk_x.append(i-1)
+        bk_y.append(j-1)
         sub_seq(i-1, j-1)
     else:
         if flag[i,j] == UP:
@@ -136,8 +145,10 @@ def sub_seq(i, j):
             sub_seq(i-1, j)
 
 if __name__ == '__main__':
-    #LCS(x,y)
-    lcs_continue(x,y)
-    #sub_seq(len_str1, len_str2)
+    LCS(x,y)
+    #lcs_continue(x,y)
+    sub_seq(len_str1, len_str2)
+    plt.plot(bk_x, bk_y, 'o')
+    plt.show()
 
 
